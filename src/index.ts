@@ -21,7 +21,7 @@ import minimist from "minimist";
 import type { PackageJson } from "types-package-json";
 import { version } from "../package.json";
 
-const argv = minimist(process.argv.slice(2));
+// const argv = minimist(process.argv.slice(2));
 
 // console.log("argv:", argv);
 
@@ -78,8 +78,6 @@ export async function init() {
   })) as string;
 
   checkCancel(name);
-
-  name = snakeCase(name);
 
   const projectPath = path.join(process.cwd(), name);
 
@@ -227,6 +225,7 @@ export async function init() {
 }
 
 init().catch((err) => {
-  console.error(err);
+  // console.error(err);
+  logger.error(err);
   process.exit(1);
 });
