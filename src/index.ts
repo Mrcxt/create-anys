@@ -17,8 +17,8 @@ import { lightBlue, lightGreen, lightRed, lightYellow } from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
 import minimist from "minimist";
-
 import type { PackageJson } from "types-package-json";
+import { version } from "../package.json";
 
 const argv = minimist(process.argv.slice(2));
 
@@ -61,7 +61,7 @@ const { start, stop } = spinner();
 
 export async function init() {
   console.log("");
-  logger.greet("◆  Create Project");
+  logger.greet("◆  Create Project, Version: " + version);
   let name = (await text({
     message: "Project name",
     placeholder: "my-project",
