@@ -16,8 +16,13 @@ import { fileURLToPath } from "node:url";
 import { lightBlue, lightGreen, lightRed, lightYellow } from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
+import minimist from "minimist";
 
 import type { PackageJson } from "types-package-json";
+
+const argv = minimist(process.argv.slice(2));
+
+// console.log("argv:", argv);
 
 const TEMPLATE_PATH = fileURLToPath(new URL("../template", import.meta.url));
 
@@ -55,23 +60,21 @@ function snakeCase(str: string, connector = "-") {
 const { start, stop } = spinner();
 
 export async function init() {
-  console.log(TEMPLATES);
   console.log("");
   logger.greet("◆  Create Project");
-
-  const name = snakeCase(
-    (await text({
-      message: "Project name",
-      placeholder: "my-project",
-      validate(value) {
-        if (value.length === 0) {
-          return "Project name is required";
-        }
-      },
-    })) as string
-  );
+  let name = (await text({
+    message: "Project name",
+    placeholder: "my-project",
+    validate(value) {
+      if (value.length === 0) {
+        return "Project name is required";
+      }
+    },
+  })) as string;
 
   checkCancel(name);
+
+  name = snakeCase(name);
 
   const projectPath = path.join(process.cwd(), name);
 
@@ -96,14 +99,15 @@ export async function init() {
   const template = (await select({
     message: "Select template",
     options: [
+      {
+        label: "Custom",
+        value: "custom",
+        hint: "Input the git repository",
+      },
       ...TEMPLATES.map((dir) => ({
         label: dir,
         value: dir,
       })),
-      {
-        label: "Custom",
-        value: "custom",
-      },
     ],
   })) as string;
 
