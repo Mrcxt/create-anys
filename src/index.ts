@@ -7,6 +7,7 @@ import {
   outro,
   select,
   text,
+  confirm,
   intro,
   spinner,
   log,
@@ -61,13 +62,17 @@ const { start, stop } = spinner();
 
 export async function init() {
   console.log("");
-  logger.greet("◆  Create Project, Version: " + version);
+  logger.greet("◆  Create Anys, Version: " + version);
   let name = (await text({
     message: "Project name",
     placeholder: "my-project",
     validate(value) {
       if (value.length === 0) {
         return "Project name is required";
+      }
+      // 检验项目名是否合法
+      if (!/^[a-z0-9-]+$/.test(value)) {
+        return "Project name can only contain letters, numbers, and hyphens";
       }
     },
   })) as string;
@@ -100,7 +105,7 @@ export async function init() {
     message: "Select template",
     options: [
       {
-        label: "Custom",
+        label: "custom",
         value: "custom",
         hint: "Input the git repository",
       },
@@ -128,6 +133,13 @@ export async function init() {
     checkCancel(customGit);
   }
 
+  // const isInitCommitlint = (await confirm({
+  //   message: "Init commitlint?",
+  //   initialValue: true,
+  // })) as boolean;
+
+  // checkCancel(isInitCommitlint);
+
   const pkgManager = (await select({
     message: "Select package manager",
     options: [
@@ -152,7 +164,7 @@ export async function init() {
 
   checkCancel(pkgManager);
 
-  // 判断是否存在project name文件夹，如果存在，直接覆盖
+  //
   function createProjectDir() {
     if (fs.existsSync(projectPath)) {
       fs.rmSync(projectPath, { recursive: true });
@@ -162,7 +174,7 @@ export async function init() {
 
   createProjectDir();
 
-  // 将template文件夹下的文件复制到project name文件夹下
+  //
   function copyTemplateFiles() {
     fs.readdirSync(path.join(TEMPLATE_PATH, template)).forEach((file) => {
       fs.copyFileSync(
@@ -172,23 +184,28 @@ export async function init() {
     });
   }
 
-  // 拉取远程git仓库模板到调用命令的当前路径下，并将文件夹命名为project name，并删除.git文件夹
+  //
   function cloneCustomTemplate() {
-    execSync(`git clone ${customGit} ${name}`);
+    try {
+      execSync(`git clone ${customGit} ${name}`, { stdio: "inherit" });
+    } catch (error) {
+      fs.rmSync(projectPath, { recursive: true });
+      logger.error(lightRed("Clone failed."));
+      process.exit(1);
+    }
     fs.rmSync(path.join(projectPath, ".git"), { recursive: true });
   }
 
   start("Initializing...");
   template === "custom" ? cloneCustomTemplate() : copyTemplateFiles();
 
-  // 修改package.json文件
+  //
   function updatePackageJson() {
     const packageJsonPath = path.join(projectPath, "package.json");
     const packageJson: PackageJson = JSON.parse(
       fs.readFileSync(packageJsonPath, "utf-8")
     );
     packageJson.name = name;
-    // scripts新增preinstall:"npx only-allow npm"
     packageJson.scripts = {
       ...packageJson.scripts,
       preinstall: `npx only-allow ${pkgManager}`,
