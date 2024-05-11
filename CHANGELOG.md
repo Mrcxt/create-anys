@@ -1,5 +1,13 @@
 
 
+## [0.0.6](https://github.com/Mrcxt/create-anys/compare/v0.0.5...v0.0.6) (2024-05-11)
+
+
+### Features
+
+* **template:** ✨ 新增模板 ([004fba2](https://github.com/Mrcxt/create-anys/commit/004fba267375fe42cb85b60e48bebf7edea1150c))
+* **template:** ✨ vite-react-cms ([6e0fc1d](https://github.com/Mrcxt/create-anys/commit/6e0fc1d341d9efa7315a7560ce056be834dd900d))
+
 ## [0.0.5](https://github.com/Mrcxt/create-anys/compare/v0.0.4...v0.0.5) (2024-05-11)
 
 
