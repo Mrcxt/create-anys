@@ -1,5 +1,12 @@
 
 
+# [0.1.0](https://github.com/Mrcxt/create-anys/compare/v0.0.8...v0.1.0) (2024-05-11)
+
+
+### Features
+
+* ✨ 增加模板描述 ([5bcd2e4](https://github.com/Mrcxt/create-anys/commit/5bcd2e40b18fd8ef36f143adcfcb44a691fcd7e2))
+
 ## [0.0.8](https://github.com/Mrcxt/create-anys/compare/v0.0.7...v0.0.8) (2024-05-11)
 
 ## [0.0.7](https://github.com/Mrcxt/create-anys/compare/v0.0.6...v0.0.7) (2024-05-11)
