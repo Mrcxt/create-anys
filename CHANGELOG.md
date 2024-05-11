@@ -1,5 +1,12 @@
 
 
+## [0.0.7](https://github.com/Mrcxt/create-anys/compare/v0.0.6...v0.0.7) (2024-05-11)
+
+
+### Features
+
+* ✨ add spinner ([f17df25](https://github.com/Mrcxt/create-anys/commit/f17df25536a1013bc7345c6df869c3634f322da1))
+
 ## [0.0.6](https://github.com/Mrcxt/create-anys/compare/v0.0.5...v0.0.6) (2024-05-11)
 
 
