@@ -1,19 +1,19 @@
 import path from "node:path";
 import url from "node:url";
 import { defineBuildConfig } from "unbuild";
+import type { PackageJson } from "types-package-json";
+import pkg from "./package.json";
 
 export default defineBuildConfig({
   entries: ["src/index"],
   clean: true,
+  failOnWarn: false,
+  externals: [...Object.keys(pkg.devDependencies || {})],
   rollup: {
-    inlineDependencies: true,
+    inlineDependencies: false,
     esbuild: {
       target: "node16",
       // minify: true,
     },
-  },
-  alias: {
-    // we can always use non-transpiled code since we support node 18+
-    // prompts: "prompts/lib/index.js",
   },
 });

@@ -12,7 +12,6 @@ import {
   confirm,
   intro,
   spinner,
-  log,
 } from "@clack/prompts";
 import { logger } from "rslog";
 import { fileURLToPath } from "node:url";
@@ -20,6 +19,7 @@ import { lightBlue, lightGreen, lightRed, lightYellow } from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
 import minimist from "minimist";
+import Ora from "ora";
 import type { PackageJson } from "types-package-json";
 import { version } from "../package.json";
 
@@ -60,9 +60,9 @@ function snakeCase(str: string, connector = "-") {
   );
 }
 
-const { start, stop } = spinner();
-
 export async function init() {
+  // const { start, stop } = spinner();
+  const spinner = Ora("Initializing...");
   console.log("");
   logger.greet("◆  Create Anys, Version: " + version);
   let name = (await text({
@@ -175,12 +175,17 @@ export async function init() {
   createProjectDir();
 
   //
-  function copyTemplateFiles() {
-    fs.readdirSync(path.join(TEMPLATE_PATH, template)).forEach((file) => {
-      fs.copyFileSync(
-        path.join(TEMPLATE_PATH, template, file),
-        path.join(projectPath, file)
-      );
+  function copyTemplateFiles(templatePath: string, projectPath: string) {
+    const files = fs.readdirSync(templatePath);
+    files.forEach((file) => {
+      const currentPath = path.join(templatePath, file);
+      const targetPath = path.join(projectPath, file);
+      if (fs.statSync(currentPath).isDirectory()) {
+        fs.mkdirSync(targetPath);
+        copyTemplateFiles(currentPath, targetPath);
+      } else {
+        fs.copyFileSync(currentPath, targetPath);
+      }
     });
   }
 
@@ -196,8 +201,10 @@ export async function init() {
     fs.rmSync(path.join(projectPath, ".git"), { recursive: true });
   }
 
-  start("Initializing...");
-  template === "custom" ? cloneCustomTemplate() : copyTemplateFiles();
+  spinner.start("Initializing...");
+  template === "custom"
+    ? cloneCustomTemplate()
+    : copyTemplateFiles(path.join(TEMPLATE_PATH, template), projectPath);
 
   //
   function updatePackageJson() {
@@ -213,7 +220,8 @@ export async function init() {
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
   }
   updatePackageJson();
-  stop();
+  // start("Initializing...");
+  spinner.stop();
 
   // 输出提示信息
   note(
