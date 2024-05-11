@@ -1,5 +1,12 @@
 
 
+## [0.0.5](https://github.com/Mrcxt/create-anys/compare/v0.0.4...v0.0.5) (2024-05-11)
+
+
+### Bug Fixes
+
+* 🐛 node env ([e8d24ec](https://github.com/Mrcxt/create-anys/commit/e8d24ec64a1611d0fcd7edb392d282cbe4de5d3d))
+
 ## [0.0.4](https://github.com/Mrcxt/create-anys/compare/v0.0.3...v0.0.4) (2024-05-10)
 
 
