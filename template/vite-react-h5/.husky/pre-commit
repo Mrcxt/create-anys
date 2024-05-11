@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+###
+ # @LastEditTime: 2023-05-18 10:34:51
+ # @Description: 
+ # @Date: 2023-05-09 17:54:39
+ # @Author: @周星星同学
+### 
+
+
+npx lint-staged

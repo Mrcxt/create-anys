@@ -1,0 +1,5 @@
+{
+  "*.{md,json}": ["prettier --write --no-error-on-unmatched-pattern"],
+  "*.{css,less}": ["stylelint --fix"],
+  "*.{js,jsx,ts,tsx}": ["eslint --fix"]
+}
