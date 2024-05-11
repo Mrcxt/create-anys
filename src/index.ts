@@ -11,7 +11,6 @@ import {
   text,
   confirm,
   intro,
-  spinner,
 } from "@clack/prompts";
 import { logger } from "rslog";
 import { fileURLToPath } from "node:url";
@@ -40,24 +39,19 @@ function checkCancel(value: unknown) {
   }
 }
 
-function snakeCase(str: string, connector = "-") {
-  // 将驼峰字符串转换为横线链接
-  const result = str.replace(
-    /[A-Z]/g,
-    (match) => `${connector}${match.toLowerCase()}`
-  );
-
-  // 过滤掉非字母、数字、连接符的字符
-  const filteredResult = result.replace(
-    new RegExp(`[^a-zA-Z0-9${connector}]`, "g"),
-    ""
-  );
-
-  // 去除开头和结尾的连接符
-  return filteredResult.replace(
-    new RegExp(`^${connector}|${connector}$`, "g"),
-    ""
-  );
+//
+function copyTemplateFiles(templatePath: string, projectPath: string) {
+  const files = fs.readdirSync(templatePath);
+  files.forEach((file) => {
+    const currentPath = path.join(templatePath, file);
+    const targetPath = path.join(projectPath, file);
+    if (fs.statSync(currentPath).isDirectory()) {
+      fs.mkdirSync(targetPath);
+      copyTemplateFiles(currentPath, targetPath);
+    } else {
+      fs.copyFileSync(currentPath, targetPath);
+    }
+  });
 }
 
 export async function init() {
@@ -104,15 +98,21 @@ export async function init() {
   const template = (await select({
     message: "Select template",
     options: [
+      ...TEMPLATES.map((dir) => ({
+        label: dir,
+        value: dir,
+        hint: JSON.parse(
+          fs.readFileSync(
+            path.join(TEMPLATE_PATH, dir, "package.json"),
+            "utf-8"
+          )
+        ).description,
+      })),
       {
         label: "custom",
         value: "custom",
         hint: "Input the git repository",
       },
-      ...TEMPLATES.map((dir) => ({
-        label: dir,
-        value: dir,
-      })),
     ],
   })) as string;
 
@@ -175,21 +175,6 @@ export async function init() {
   createProjectDir();
 
   //
-  function copyTemplateFiles(templatePath: string, projectPath: string) {
-    const files = fs.readdirSync(templatePath);
-    files.forEach((file) => {
-      const currentPath = path.join(templatePath, file);
-      const targetPath = path.join(projectPath, file);
-      if (fs.statSync(currentPath).isDirectory()) {
-        fs.mkdirSync(targetPath);
-        copyTemplateFiles(currentPath, targetPath);
-      } else {
-        fs.copyFileSync(currentPath, targetPath);
-      }
-    });
-  }
-
-  //
   function cloneCustomTemplate() {
     try {
       execSync(`git clone ${customGit} ${name}`, { stdio: "inherit" });
@@ -235,7 +220,6 @@ export async function init() {
 }
 
 init().catch((err) => {
-  // console.error(err);
   logger.error(err);
   process.exit(1);
 });

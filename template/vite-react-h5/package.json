@@ -1,5 +1,6 @@
 {
-  "name": "vite-h5-template",
+  "name": "vite-react-h5",
+  "description": "A Vite + React + TypeScript + Antd-mobile project template.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
