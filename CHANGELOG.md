@@ -1,5 +1,12 @@
 
 
+## [0.2.2](https://github.com/Mrcxt/create-anys/compare/v0.2.1...v0.2.2) (2024-05-13)
+
+
+### Bug Fixes
+
+* 🐛 remove ([4a7b7d7](https://github.com/Mrcxt/create-anys/commit/4a7b7d781f70992d0c25778b0a4547a3ab97c019))
+
 ## [0.2.1](https://github.com/Mrcxt/create-anys/compare/v0.2.0...v0.2.1) (2024-05-13)
 
 # [0.2.0](https://github.com/Mrcxt/create-anys/compare/v0.1.0...v0.2.0) (2024-05-13)
