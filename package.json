@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "running": "npm run build && node dist/index.mjs",
-    "release": "npm run build && release-it"
+    "release": "npm run build && release-it  --only-version"
   },
   "engines": {
     "node": "^16.0.0 || ^18.0.0 || >=20.0.0"
