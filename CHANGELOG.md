@@ -1,5 +1,12 @@
 
 
+# [0.2.0](https://github.com/Mrcxt/create-anys/compare/v0.1.0...v0.2.0) (2024-05-13)
+
+
+### Features
+
+* ✨ add unbuild-lib ([ae81b9a](https://github.com/Mrcxt/create-anys/commit/ae81b9a5d031228895b3e43cace4dfbc7c9066be))
+
 # [0.1.0](https://github.com/Mrcxt/create-anys/compare/v0.0.8...v0.1.0) (2024-05-11)
 
 
