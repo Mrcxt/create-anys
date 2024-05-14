@@ -2,12 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "normalize.css";
 
-import App from "./App.tsx";
+function App() {
+  return <div>Hello World!</div>;
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <>
-    {/* <React.StrictMode> */}
     <App />
-    {/* </React.StrictMode> */}
   </>
 );

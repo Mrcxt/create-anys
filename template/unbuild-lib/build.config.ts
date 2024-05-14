@@ -11,7 +11,7 @@ export default defineBuildConfig({
   failOnWarn: false,
   externals: [
     ...Object.keys(pkg?.devDependencies || {}),
-    ...Object.keys(pkg?.dependencies || {}),
+    ...Object.keys((pkg as any)?.dependencies || {}),
   ],
   rollup: {
     inlineDependencies: false,
