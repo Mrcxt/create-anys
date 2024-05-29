@@ -4,6 +4,9 @@
     "commitMessage": "release: 🍀v${version}",
     "requireCleanWorkingDir": false
   },
+  "hooks": {
+    "after:bump": "npm run build"
+  },
   "github": {
     "release": false
   },
