@@ -1,5 +1,12 @@
 
 
+# [1.1.0](https://github.com/Mrcxt/create-anys/compare/v1.0.0...v1.1.0) (2024-05-29)
+
+
+### Performance Improvements
+
+* ⚡️ perf ([1cf8566](https://github.com/Mrcxt/create-anys/commit/1cf8566601fc60ed082481c91ad2431bfdc77943))
+
 # [1.0.0](https://github.com/Mrcxt/create-anys/compare/v0.2.2...v1.0.0) (2024-05-14)
 
 ## [0.2.2](https://github.com/Mrcxt/create-anys/compare/v0.2.1...v0.2.2) (2024-05-13)
