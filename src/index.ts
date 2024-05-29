@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
+import fs from "fs-extra";
 import path from "node:path";
 import {
   cancel,
@@ -11,20 +11,29 @@ import {
   text,
   confirm,
   intro,
+  spinner as Spinner,
+  log,
 } from "@clack/prompts";
-import { logger } from "rslog";
 import { fileURLToPath } from "node:url";
-import { lightBlue, lightGreen, lightRed, lightYellow } from "kolorist";
+import {
+  black,
+  lightBlue,
+  lightGreen,
+  lightRed,
+  lightYellow,
+  yellow,
+  green,
+} from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
 import minimist from "minimist";
-import Ora from "ora";
 import type { PackageJson } from "types-package-json";
 import { version } from "../package.json";
+import { setTimeout as sleep } from "node:timers/promises";
+import { mainSymbols } from "figures";
+import { trimNewline } from "./utils";
 
-// const argv = minimist(process.argv.slice(2));
-
-// console.log("argv:", argv);
+const spinner = Spinner();
 
 const TEMPLATE_PATH = fileURLToPath(new URL("../template", import.meta.url));
 
@@ -32,33 +41,29 @@ const TEMPLATES = fs
   .readdirSync(TEMPLATE_PATH)
   .filter((file) => fs.statSync(`${TEMPLATE_PATH}/${file}`).isDirectory());
 
+const exit = (str?: string) => {
+  cancel(str ?? "Operation cancelled.");
+  process.exit(0);
+};
+
 function checkCancel(value: unknown) {
   if (isCancel(value)) {
-    cancel("Operation cancelled.");
-    process.exit(0);
+    exit();
   }
 }
 
-//
-function copyTemplateFiles(templatePath: string, projectPath: string) {
-  const files = fs.readdirSync(templatePath);
-  files.forEach((file) => {
-    const currentPath = path.join(templatePath, file);
-    const targetPath = path.join(projectPath, file);
-    if (fs.statSync(currentPath).isDirectory()) {
-      fs.mkdirSync(targetPath);
-      copyTemplateFiles(currentPath, targetPath);
-    } else {
-      fs.copyFileSync(currentPath, targetPath);
-    }
-  });
-}
-
 export async function init() {
-  // const { start, stop } = spinner();
-  const spinner = Ora("Initializing...");
   console.log("");
-  logger.greet("◆  Create Anys, Version: " + version);
+  intro(green(mainSymbols.musicNote + " Create Anys, Version: " + version));
+
+  // log.error("error");
+  // log.info("info");
+  // log.message("message");
+  // log.step("step");
+  // log.success("success");
+  // log.warn("warn");
+  // log.warning("warning");
+
   let name = (await text({
     message: "Project name",
     placeholder: "my-project",
@@ -66,7 +71,6 @@ export async function init() {
       if (value.length === 0) {
         return "Project name is required";
       }
-      // 检验项目名是否合法
       if (!/^[a-z0-9-]+$/.test(value)) {
         return "Project name can only contain letters, numbers, and hyphens";
       }
@@ -77,8 +81,9 @@ export async function init() {
 
   const projectPath = path.join(process.cwd(), name);
 
+  let overwrite = false;
   if (fs.existsSync(projectPath)) {
-    const overwrite = (await select({
+    overwrite = (await select({
       message: `The destination directory is not empty. Are you sure you want to overwrite it?`,
       options: [
         {
@@ -91,6 +96,10 @@ export async function init() {
         },
       ],
     })) as boolean;
+
+    if (!overwrite) {
+      exit();
+    }
 
     checkCancel(overwrite);
   }
@@ -133,82 +142,95 @@ export async function init() {
     checkCancel(customGit);
   }
 
-  // const isInitCommitlint = (await confirm({
-  //   message: "Init commitlint?",
-  //   initialValue: true,
-  // })) as boolean;
-
-  // checkCancel(isInitCommitlint);
-
   const pkgManager = (await select({
     message: "Select package manager",
     options: [
-      {
-        label: "pnpm",
-        value: "pnpm",
-      },
-      {
-        label: "cnpm",
-        value: "cnpm",
-      },
-      {
-        label: "npm",
-        value: "npm",
-      },
-      {
-        label: "yarn",
-        value: "yarn",
-      },
+      { label: "pnpm", value: "pnpm" },
+      { label: "cnpm", value: "cnpm" },
+      { label: "npm", value: "npm" },
+      { label: "yarn", value: "yarn" },
     ],
   })) as string;
 
   checkCancel(pkgManager);
 
-  //
-  function createProjectDir() {
-    if (fs.existsSync(projectPath)) {
-      fs.rmSync(projectPath, { recursive: true });
+  const initGit = (await confirm({
+    message: "Init git?",
+    initialValue: true,
+  })) as boolean;
+
+  checkCancel(initGit);
+
+  async function createProjectDir() {
+    spinner.start("Create project dir");
+
+    if (overwrite) {
+      await fs.remove(projectPath);
     }
-    fs.mkdirSync(projectPath);
+    await fs.mkdir(projectPath);
+
+    spinner.stop(yellow(mainSymbols.tick + "Project dir created"));
   }
 
-  createProjectDir();
+  await createProjectDir();
 
-  //
-  function cloneCustomTemplate() {
+  async function cloneCustomTemplate() {
+    spinner.start("Cloning template");
     try {
-      execSync(`git clone ${customGit} ${name}`, { stdio: "inherit" });
+      const logs = execSync(`git clone ${customGit} ${name}`, {
+        stdio: "pipe",
+      }).toString();
+      await fs.remove(path.join(projectPath, ".git"));
+
+      spinner.stop(yellow(mainSymbols.tick + trimNewline(logs)));
     } catch (error) {
-      fs.rmSync(projectPath, { recursive: true });
-      logger.error(lightRed("Clone failed."));
-      process.exit(1);
+      await fs.remove(projectPath);
+      exit();
     }
-    fs.rmSync(path.join(projectPath, ".git"), { recursive: true });
   }
 
-  spinner.start("Initializing...");
-  template === "custom"
-    ? cloneCustomTemplate()
-    : copyTemplateFiles(path.join(TEMPLATE_PATH, template), projectPath);
+  async function copyTemplateFiles(templatePath: string, projectPath: string) {
+    spinner.start("Copying template files");
+    await fs.copy(templatePath, projectPath);
+    spinner.stop(yellow(mainSymbols.tick + "Template files copied"));
+  }
 
-  //
-  function updatePackageJson() {
+  if (template === "custom") {
+    await cloneCustomTemplate();
+  } else {
+    await copyTemplateFiles(path.join(TEMPLATE_PATH, template), projectPath);
+  }
+
+  async function updatePackageJson() {
+    spinner.start("Updating package.json");
     const packageJsonPath = path.join(projectPath, "package.json");
     const packageJson: PackageJson = JSON.parse(
-      fs.readFileSync(packageJsonPath, "utf-8")
+      await fs.readFile(packageJsonPath, "utf-8")
     );
     packageJson.name = name;
     packageJson.scripts = {
       ...packageJson.scripts,
       preinstall: `npx only-allow ${pkgManager}`,
     };
-    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    spinner.stop(yellow(mainSymbols.tick + "Package.json updated"));
   }
-  updatePackageJson();
-  // start("Initializing...");
-  spinner.stop();
+  await updatePackageJson();
 
-  // 输出提示信息
+  if (initGit) {
+    spinner.start("Initializing git");
+    try {
+      const logs = execSync("git init", {
+        stdio: "pipe",
+        cwd: projectPath,
+      }).toString();
+
+      spinner.stop(yellow(mainSymbols.tick + trimNewline(logs)));
+    } catch (error) {
+      exit("Git init failed.");
+    }
+  }
+
   note(
     `\u{1F449} ${lightGreen(`cd ${name}`)}\n\u{1F449} ${lightGreen(
       pkgManager === "yarn" ? "yarn" : `${pkgManager} install`
@@ -216,10 +238,9 @@ export async function init() {
     "Next steps"
   );
 
-  outro(lightYellow("Done."));
+  outro("Done.");
 }
 
 init().catch((err) => {
-  logger.error(err);
-  process.exit(1);
+  exit(err);
 });
