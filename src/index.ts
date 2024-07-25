@@ -12,7 +12,6 @@ import {
   confirm,
   intro,
   spinner as Spinner,
-  log,
 } from "@clack/prompts";
 import { fileURLToPath } from "node:url";
 import {
@@ -23,6 +22,7 @@ import {
   lightYellow,
   yellow,
   green,
+  blue,
 } from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
@@ -33,13 +33,23 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { mainSymbols } from "figures";
 import { trimNewline } from "./utils";
 
+type Manager = "npm" | "yarn" | "pnpm" | "cnpm";
+
+const figuresLogs = {
+  tick: (message: string) => mainSymbols.tick + " " + message,
+  cross: (message: string) => mainSymbols.cross + " " + message,
+  info: (message: string) => mainSymbols.info + " " + message,
+  warning: (message: string) => mainSymbols.warning + " " + message,
+};
+
 const spinner = Spinner();
 
 const TEMPLATE_PATH = fileURLToPath(new URL("../template", import.meta.url));
 
 const TEMPLATES = fs
   .readdirSync(TEMPLATE_PATH)
-  .filter((file) => fs.statSync(`${TEMPLATE_PATH}/${file}`).isDirectory());
+  .filter((file) => fs.statSync(`${TEMPLATE_PATH}/${file}`).isDirectory())
+  .sort((a, b) => a.localeCompare(b));
 
 const exit = (str?: string) => {
   cancel(str ?? "Operation cancelled.");
@@ -54,15 +64,9 @@ function checkCancel(value: unknown) {
 
 export async function init() {
   console.log("");
-  intro(green(mainSymbols.musicNote + " Create Anys, Version: " + version));
-
-  // log.error("error");
-  // log.info("info");
-  // log.message("message");
-  // log.step("step");
-  // log.success("success");
-  // log.warn("warn");
-  // log.warning("warning");
+  intro(
+    lightGreen(mainSymbols.musicNote + " Create Anys, Version: " + version)
+  );
 
   let name = (await text({
     message: "Project name",
@@ -150,7 +154,7 @@ export async function init() {
       { label: "npm", value: "npm" },
       { label: "yarn", value: "yarn" },
     ],
-  })) as string;
+  })) as Manager;
 
   checkCancel(pkgManager);
 
@@ -169,7 +173,7 @@ export async function init() {
     }
     await fs.mkdir(projectPath);
 
-    spinner.stop(yellow(mainSymbols.tick + "Project dir created"));
+    spinner.stop(lightGreen(figuresLogs.tick("Project dir created")));
   }
 
   await createProjectDir();
@@ -182,7 +186,7 @@ export async function init() {
       }).toString();
       await fs.remove(path.join(projectPath, ".git"));
 
-      spinner.stop(yellow(mainSymbols.tick + trimNewline(logs)));
+      spinner.stop(figuresLogs.tick(trimNewline(logs)));
     } catch (error) {
       await fs.remove(projectPath);
       exit();
@@ -192,7 +196,7 @@ export async function init() {
   async function copyTemplateFiles(templatePath: string, projectPath: string) {
     spinner.start("Copying template files");
     await fs.copy(templatePath, projectPath);
-    spinner.stop(yellow(mainSymbols.tick + "Template files copied"));
+    spinner.stop(lightGreen(figuresLogs.tick("Template files copied")));
   }
 
   if (template === "custom") {
@@ -213,7 +217,7 @@ export async function init() {
       preinstall: `npx only-allow ${pkgManager}`,
     };
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
-    spinner.stop(yellow(mainSymbols.tick + "Package.json updated"));
+    spinner.stop(lightGreen(figuresLogs.tick("Package.json updated")));
   }
   await updatePackageJson();
 
@@ -225,17 +229,20 @@ export async function init() {
         cwd: projectPath,
       }).toString();
 
-      spinner.stop(yellow(mainSymbols.tick + trimNewline(logs)));
+      spinner.stop(lightGreen(figuresLogs.tick(trimNewline(logs))));
     } catch (error) {
       exit("Git init failed.");
     }
   }
 
   note(
-    `\u{1F449} ${lightGreen(`cd ${name}`)}\n\u{1F449} ${lightGreen(
-      pkgManager === "yarn" ? "yarn" : `${pkgManager} install`
-    )}`,
-    "Next steps"
+    [
+      `\u{1F449} ${lightYellow(`cd ${name}`)}`,
+      `\u{1F449} ${lightYellow(
+        pkgManager === "yarn" ? "yarn" : `${pkgManager} install`
+      )}`,
+    ].join("\n"),
+    lightYellow("Next steps")
   );
 
   outro("Done.");
