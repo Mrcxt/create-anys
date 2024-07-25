@@ -15,7 +15,7 @@
     "build": "unbuild",
     "typecheck": "tsc --noEmit",
     "running": "npm run build && node dist/index.mjs",
-    "release": "release-it  --only-version"
+    "release": "release-it  --only-version --npm.publishArgs='--registry=https://registry.npmjs.org'"
   },
   "engines": {
     "node": "^16.0.0 || ^18.0.0 || >=20.0.0"
