@@ -14,23 +14,15 @@ import {
   spinner as Spinner,
 } from "@clack/prompts";
 import { fileURLToPath } from "node:url";
-import {
-  black,
-  lightBlue,
-  lightGreen,
-  lightRed,
-  lightYellow,
-  yellow,
-  green,
-  blue,
-} from "kolorist";
+import { lightGreen, lightYellow } from "kolorist";
 import isGitUrl from "is-git-url";
 import { execSync } from "node:child_process";
-import minimist from "minimist";
-import type { PackageJson } from "types-package-json";
-import { version } from "../package.json";
 import { setTimeout as sleep } from "node:timers/promises";
 import { mainSymbols } from "figures";
+
+import { readPackageJSON, writePackageJSON, type PackageJson } from "pkg-types";
+
+import { version } from "../package.json";
 import { trimNewline } from "./utils";
 
 type Manager = "npm" | "yarn" | "pnpm" | "cnpm";
